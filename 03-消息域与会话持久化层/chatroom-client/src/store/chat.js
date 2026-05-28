@@ -12,6 +12,21 @@ export const useChatStore = defineStore('chat', {
     currentMessages: (state) => state.messages[state.currentChatKey] || []
   },
   actions: {
+    mergeMessages(existingMessages = [], incomingMessages = []) {
+      const merged = [...existingMessages]
+      incomingMessages.forEach((message) => {
+        const existing = merged.find(m =>
+          (message.id && m.id === message.id) ||
+          (message.clientMessageId && m.clientMessageId === message.clientMessageId)
+        )
+        if (existing) {
+          Object.assign(existing, message)
+          return
+        }
+        merged.push(message)
+      })
+      return merged
+    },
     setCurrentChat(key) {
       this.currentChatKey = key
     },
@@ -26,9 +41,9 @@ export const useChatStore = defineStore('chat', {
         }
         const key = `${type}_${id}`
         if (page === 1) {
-          this.messages[key] = msgs
+          this.messages[key] = this.mergeMessages([], msgs)
         } else {
-          this.messages[key] = [...msgs, ...(this.messages[key] || [])]
+          this.messages[key] = this.mergeMessages(msgs, this.messages[key] || [])
         }
         return msgs
       } catch (e) {
