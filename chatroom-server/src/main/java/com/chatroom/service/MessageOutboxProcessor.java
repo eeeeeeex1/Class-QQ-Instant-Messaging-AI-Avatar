@@ -26,7 +26,7 @@ public class MessageOutboxProcessor {
 
     @Scheduled(fixedDelay = 5000)
     public void processPendingEvents() {
-        List<MessageOutbox> events = messageOutboxService.getPendingEvents(100);
+        List<MessageOutbox> events = messageOutboxService.claimPendingEvents(100);
         for (MessageOutbox event : events) {
             try {
                 if (!MessageOutboxService.EVENT_TYPE_CHAT_MESSAGE.equals(event.getEventType())) {
