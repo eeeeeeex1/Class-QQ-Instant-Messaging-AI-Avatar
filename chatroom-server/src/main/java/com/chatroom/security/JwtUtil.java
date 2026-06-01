@@ -62,11 +62,17 @@ public class JwtUtil {
     }
 
     public boolean validateToken(String token) {
+        return "valid".equals(resolveTokenStatus(token));
+    }
+
+    public String resolveTokenStatus(String token) {
         try {
             parseToken(token);
-            return true;
+            return "valid";
+        } catch (ExpiredJwtException e) {
+            return "expired";
         } catch (JwtException | IllegalArgumentException e) {
-            return false;
+            return "invalid";
         }
     }
 }

@@ -1,5 +1,6 @@
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
+import { handleUnauthorized } from './auth'
 
 let stompClient = null
 let subscriptions = {}
@@ -9,6 +10,11 @@ let statusHandlers = []
 
 export function connectWebSocket(token) {
   return new Promise((resolve, reject) => {
+    if (!token) {
+      handleUnauthorized('登录状态已失效，请重新登录')
+      reject(new Error('Missing token'))
+      return
+    }
     const socket = new SockJS(`/ws/chat?token=${token}`)
     stompClient = new Client({
       webSocketFactory: () => socket,
@@ -28,7 +34,15 @@ export function connectWebSocket(token) {
       },
       onStompError: (frame) => {
         console.error('STOMP error:', frame)
+        if (localStorage.getItem('token')) {
+          handleUnauthorized('WebSocket 鉴权失败，请重新登录')
+        }
         reject(new Error('WebSocket connection failed'))
+      },
+      onWebSocketClose: () => {
+        if (!localStorage.getItem('token')) {
+          disconnectWebSocket()
+        }
       }
     })
     stompClient.activate()

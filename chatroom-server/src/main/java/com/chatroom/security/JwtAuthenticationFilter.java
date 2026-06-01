@@ -25,14 +25,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String token = extractToken(request);
-        if (StrUtil.isNotBlank(token) && jwtUtil.validateToken(token)) {
-            Long userId = jwtUtil.getUserId(token);
-            String username = jwtUtil.getUsername(token);
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userId, username, Collections.emptyList());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            MDC.put("userId", String.valueOf(userId));
-            MDC.put("username", username);
+        if (StrUtil.isNotBlank(token)) {
+            String tokenStatus = jwtUtil.resolveTokenStatus(token);
+            request.setAttribute("auth.tokenStatus", tokenStatus);
+            if ("valid".equals(tokenStatus)) {
+                Long userId = jwtUtil.getUserId(token);
+                String username = jwtUtil.getUsername(token);
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(userId, username, Collections.emptyList());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                MDC.put("userId", String.valueOf(userId));
+                MDC.put("username", username);
+            }
         }
         filterChain.doFilter(request, response);
     }

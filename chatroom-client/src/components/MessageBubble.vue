@@ -59,15 +59,15 @@ const props = defineProps({
 defineEmits(['reply', 'recall', 'deleteMsg'])
 
 function extractImageUrl(content) {
-  const m = content?.match(/\/api\/files\/[^\s]+/)
+  const m = content?.match(/\/api\/files(?:\/public\/[^\s]+|\/[^\s]+)/)
   return m ? m[0] : ''
 }
 function extractFileUrl(content) {
-  const m = content?.match(/\/api\/files\/[^\s]+/)
+  const m = content?.match(/\/api\/files(?:\/public\/[^\s]+|\/[^\s]+)/)
   return m ? m[0] : ''
 }
 function extractFileName(content) {
-  const m = content?.match(/\[文件\]\s+(.+?)\s+\/api\/files\//)
+  const m = content?.match(/\[文件\]\s+(.+?)\s+\/api\/files(?:\/public)?\//)
   return m ? m[1] : '下载文件'
 }
 

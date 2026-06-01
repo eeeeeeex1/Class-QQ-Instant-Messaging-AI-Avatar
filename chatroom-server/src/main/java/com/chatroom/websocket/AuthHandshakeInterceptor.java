@@ -22,6 +22,7 @@ public class AuthHandshakeInterceptor implements HandshakeInterceptor {
                                    WebSocketHandler wsHandler, Map<String, Object> attributes) {
         String query = request.getURI().getQuery();
         if (StrUtil.isBlank(query)) {
+            response.getHeaders().add("X-Auth-Status", "missing");
             return false;
         }
 
@@ -33,7 +34,14 @@ public class AuthHandshakeInterceptor implements HandshakeInterceptor {
             }
         }
 
-        if (StrUtil.isBlank(token) || !jwtUtil.validateToken(token)) {
+        if (StrUtil.isBlank(token)) {
+            response.getHeaders().add("X-Auth-Status", "missing");
+            return false;
+        }
+
+        String tokenStatus = jwtUtil.resolveTokenStatus(token);
+        if (!"valid".equals(tokenStatus)) {
+            response.getHeaders().add("X-Auth-Status", tokenStatus);
             return false;
         }
 

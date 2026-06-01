@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-import router from '../router'
+import { handleUnauthorized } from '../utils/auth'
 
 const TRACE_ID_STORAGE_KEY = 'traceId'
 
@@ -46,20 +46,25 @@ request.interceptors.response.use(
       return res.data
     }
     if (res.code === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      router.push('/login')
-      ElMessage.error('登录已过期，请重新登录')
+      handleUnauthorized(res.message || '登录已过期，请重新登录')
+      ElMessage.error(res.message || '登录已过期，请重新登录')
       return Promise.reject(new Error(res.message))
     }
     ElMessage.error(res.message || '请求失败')
     return Promise.reject(new Error(res.message))
   },
   error => {
+    const authStatus = error.response?.headers?.['x-auth-status']
     if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      router.push('/login')
+      const messageMap = {
+        expired: 'Token 已过期，请重新登录',
+        invalid: 'Token 无效，请重新登录',
+        missing: '请先登录'
+      }
+      const message = error.response?.data?.message || messageMap[authStatus] || '登录已过期，请重新登录'
+      handleUnauthorized(message)
+      ElMessage.error(message)
+      return Promise.reject(error)
     }
     ElMessage.error(error.message || '网络错误')
     return Promise.reject(error)

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { login as loginApi, register as registerApi, getCurrentUser } from '../api/auth'
+import { clearAuthState } from '../utils/auth'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -37,8 +38,7 @@ export const useUserStore = defineStore('user', {
     logout() {
       this.token = ''
       this.user = null
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
+      clearAuthState()
     }
   }
 })

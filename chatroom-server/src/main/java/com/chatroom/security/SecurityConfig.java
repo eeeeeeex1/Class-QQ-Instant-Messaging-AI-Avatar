@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                 .requestMatchers("/avatars/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/files/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/files/public/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/bots/list-simple", "/api/bots/providers").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()

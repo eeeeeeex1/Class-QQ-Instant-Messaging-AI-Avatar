@@ -1,5 +1,6 @@
 server:
   port: 8080
+  forward-headers-strategy: framework
 
 spring:
   application:
@@ -97,6 +98,15 @@ chatroom:
       ip-max-attempts: ${CHATROOM_SECURITY_LOGIN_IP_MAX_ATTEMPTS:10}
       failure-threshold: ${CHATROOM_SECURITY_LOGIN_FAILURE_THRESHOLD:5}
       lock-seconds: ${CHATROOM_SECURITY_LOGIN_LOCK_SECONDS:900}
+  file-storage:
+    image-bucket: ${CHATROOM_FILE_IMAGE_BUCKET:images}
+    attachment-bucket: ${CHATROOM_FILE_ATTACHMENT_BUCKET:attachments}
+  gateway:
+    enabled: ${CHATROOM_GATEWAY_ENABLED:false}
+    external-base-url: ${CHATROOM_GATEWAY_EXTERNAL_BASE_URL:}
+    api-prefix: ${CHATROOM_GATEWAY_API_PREFIX:/api}
+    websocket-prefix: ${CHATROOM_GATEWAY_WS_PREFIX:/ws}
+    public-files-prefix: ${CHATROOM_GATEWAY_PUBLIC_FILES_PREFIX:/api/files/public}
 
 # Bot configuration
 # Set API key via environment variable: export BOT_API_KEY=sk-your-key

@@ -70,6 +70,10 @@ services:
       STOMP_RELAY_SYSTEM_LOGIN: guest
       STOMP_RELAY_SYSTEM_PASSCODE: guest
       STOMP_RELAY_VHOST: /
+      CHATROOM_GATEWAY_ENABLED: true
+      CHATROOM_GATEWAY_API_PREFIX: /api
+      CHATROOM_GATEWAY_WS_PREFIX: /ws
+      CHATROOM_GATEWAY_PUBLIC_FILES_PREFIX: /api/files/public
     ports:
       - "8080:8080"
     depends_on:

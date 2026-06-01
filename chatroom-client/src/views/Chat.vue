@@ -115,6 +115,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '../store/user'
 import { useContactStore } from '../store/contact'
 import { useChatStore } from '../store/chat'
+import { onAuthExpired } from '../utils/auth'
 import { connectWebSocket, disconnectWebSocket, addMessageHandler, removeMessageHandler, addPresenceHandler, removePresenceHandler, subscribeGroupMessages, addStreamHandler, removeStreamHandler, subscribeGroupStream, unsubscribeGroupStream, addStatusHandler, removeStatusHandler, sendChatAck } from '../utils/websocket'
 import { acceptFriendRequest, rejectFriendRequest } from '../api/friend'
 import { deleteAccount } from '../api/user'
@@ -136,6 +137,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const contactStore = useContactStore()
 const chatStore = useChatStore()
+let removeAuthExpiredListener = null
 
 const showAddFriend = ref(false)
 const showCreateGroup = ref(false)
@@ -328,8 +330,17 @@ async function subscribeAllGroups() {
 }
 
 onMounted(async () => {
-  await userStore.fetchUser()
-  await contactStore.fetchAll()
+  removeAuthExpiredListener = onAuthExpired((message) => {
+    disconnectWebSocket()
+    ElMessage.error(message)
+  })
+
+  try {
+    await userStore.fetchUser()
+    await contactStore.fetchAll()
+  } catch (e) {
+    return
+  }
 
   const token = localStorage.getItem('token')
   if (token) {
@@ -348,6 +359,10 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  if (removeAuthExpiredListener) {
+    removeAuthExpiredListener()
+    removeAuthExpiredListener = null
+  }
   removeMessageHandler(handleMessage)
   removePresenceHandler(handlePresence)
   removeStatusHandler(handleMessageStatus)
