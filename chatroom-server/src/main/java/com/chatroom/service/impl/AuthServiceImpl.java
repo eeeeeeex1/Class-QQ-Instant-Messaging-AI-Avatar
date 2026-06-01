@@ -7,6 +7,7 @@ import com.chatroom.model.dto.RegisterDTO;
 import com.chatroom.model.entity.User;
 import com.chatroom.model.vo.LoginVO;
 import com.chatroom.model.vo.UserVO;
+import com.chatroom.security.LoginProtectionService;
 import com.chatroom.security.JwtUtil;
 import com.chatroom.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final LoginProtectionService loginProtectionService;
 
     @Override
     public LoginVO register(RegisterDTO dto) {
@@ -57,15 +59,19 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginVO login(LoginDTO dto) {
+    public LoginVO login(LoginDTO dto, String clientIp) {
+        loginProtectionService.checkLoginAllowed(dto.getUsername(), clientIp);
+
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getUsername, dto.getUsername());
         User user = userMapper.selectOne(wrapper);
 
         if (user == null || !passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            loginProtectionService.onLoginFailure(dto.getUsername(), clientIp);
             throw new RuntimeException("用户名或密码错误");
         }
 
+        loginProtectionService.onLoginSuccess(dto.getUsername(), clientIp);
         user.setLastLoginTime(LocalDateTime.now());
         user.setStatus(1);
         userMapper.updateById(user);

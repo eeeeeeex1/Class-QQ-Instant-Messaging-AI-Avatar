@@ -160,8 +160,8 @@ import { recallMessage } from '../api/message'
 import { setActiveMode, getActiveMode, updateBotSkillText } from '../api/bot'
 import { clearChatHistory, deleteMessagePermanently } from '../api/message'
 import { getGroupMembers, getGroupBotAutoChat, setGroupBotAutoChat } from '../api/group'
+import request from '../api/request'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import axios from 'axios'
 import { Close, Paperclip, Picture, ArrowRight, DocumentAdd, Setting, Clock, Delete } from '@element-plus/icons-vue'
 import MessageBubble from './MessageBubble.vue'
 import ProviderSelector from './ProviderSelector.vue'
@@ -339,11 +339,9 @@ async function onFileSelect(e, isImage) {
   try {
     const formData = new FormData()
     formData.append('file', file)
-    const token = localStorage.getItem('token')
-    const res = await axios.post('/api/files/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data', Authorization: token ? `Bearer ${token}` : '' }
+    const d = await request.post('/files/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
     })
-    const d = res.data.data || res.data
     if (d && d.url) {
       const contentType = isImage ? 1 : 2
       const content = isImage ? `[图片] ${d.url}` : `[文件] ${d.originalName} ${d.url}`

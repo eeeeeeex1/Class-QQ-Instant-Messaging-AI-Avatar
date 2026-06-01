@@ -8,6 +8,7 @@ import com.chatroom.model.vo.UserVO;
 import com.chatroom.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import com.chatroom.security.SecurityUtil;
@@ -29,13 +30,29 @@ public class AuthController {
 
     @Operation(summary = "用户登录")
     @PostMapping("/login")
-    public Result<LoginVO> login(@Valid @RequestBody LoginDTO dto) {
-        return Result.ok(authService.login(dto));
+    public Result<LoginVO> login(@Valid @RequestBody LoginDTO dto, HttpServletRequest request) {
+        return Result.ok(authService.login(dto, resolveClientIp(request)));
     }
 
     @Operation(summary = "获取当前用户信息")
     @GetMapping("/me")
     public Result<UserVO> me() {
         return Result.ok(authService.getCurrentUser(SecurityUtil.getCurrentUserId()));
+    }
+
+    private String resolveClientIp(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+            int commaIndex = xForwardedFor.indexOf(",");
+            return commaIndex > 0 ? xForwardedFor.substring(0, commaIndex).trim() : xForwardedFor.trim();
+        }
+
+        String realIp = request.getHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) {
+            return realIp.trim();
+        }
+
+        String remoteAddr = request.getRemoteAddr();
+        return remoteAddr == null ? "unknown" : remoteAddr;
     }
 }

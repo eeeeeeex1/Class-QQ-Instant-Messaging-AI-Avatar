@@ -7,6 +7,6 @@ import com.chatroom.model.vo.UserVO;
 
 public interface AuthService {
     LoginVO register(RegisterDTO dto);
-    LoginVO login(LoginDTO dto);
+    LoginVO login(LoginDTO dto, String clientIp);
     UserVO getCurrentUser(Long userId);
 }

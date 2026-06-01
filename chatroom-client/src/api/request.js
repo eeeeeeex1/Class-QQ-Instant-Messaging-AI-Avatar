@@ -2,6 +2,24 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '../router'
 
+const TRACE_ID_STORAGE_KEY = 'traceId'
+
+function generateId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID().replace(/-/g, '')
+  }
+  return `${Date.now()}${Math.random().toString(16).slice(2)}`
+}
+
+function getOrCreateTraceId() {
+  let traceId = localStorage.getItem(TRACE_ID_STORAGE_KEY)
+  if (!traceId) {
+    traceId = generateId()
+    localStorage.setItem(TRACE_ID_STORAGE_KEY, traceId)
+  }
+  return traceId
+}
+
 const request = axios.create({
   baseURL: '/api',
   timeout: 15000
@@ -9,6 +27,12 @@ const request = axios.create({
 
 request.interceptors.request.use(config => {
   const token = localStorage.getItem('token')
+  const traceId = getOrCreateTraceId()
+  const requestId = generateId()
+
+  config.headers['X-Trace-Id'] = traceId
+  config.headers['X-Request-Id'] = requestId
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }

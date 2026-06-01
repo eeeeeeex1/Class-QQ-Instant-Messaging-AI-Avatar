@@ -91,6 +91,12 @@ chatroom:
       virtual-host: ${STOMP_RELAY_VHOST:/}
       system-heartbeat-send-interval: ${STOMP_RELAY_HEARTBEAT_SEND_MS:10000}
       system-heartbeat-receive-interval: ${STOMP_RELAY_HEARTBEAT_RECEIVE_MS:10000}
+  security:
+    login-protection:
+      ip-window-seconds: ${CHATROOM_SECURITY_LOGIN_IP_WINDOW_SECONDS:60}
+      ip-max-attempts: ${CHATROOM_SECURITY_LOGIN_IP_MAX_ATTEMPTS:10}
+      failure-threshold: ${CHATROOM_SECURITY_LOGIN_FAILURE_THRESHOLD:5}
+      lock-seconds: ${CHATROOM_SECURITY_LOGIN_LOCK_SECONDS:900}
 
 # Bot configuration
 # Set API key via environment variable: export BOT_API_KEY=sk-your-key
